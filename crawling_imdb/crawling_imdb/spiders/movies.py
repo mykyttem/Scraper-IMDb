@@ -1,6 +1,5 @@
 from scrapy.spiders import CrawlSpider
 
-
 codes_regions = []
 
 class Crawling_ReleaseCalendar(CrawlSpider):
@@ -50,4 +49,32 @@ class Crawling_ReleaseCalendar(CrawlSpider):
                 "actors": actors,
                 "img": img,
                 "url": url
+            }
+
+
+class Crawling_Top250Movies(CrawlSpider):
+    name = "Crawler_Top250Movies"
+    allowed_domains = ["imdb.com"]
+    start_urls = ["https://www.imdb.com/chart/top/?ref_=nv_mv_250"]
+
+
+    def parse_start_url(self, response):
+    
+        movies = response.css(".ipc-metadata-list-summary-item.sc-bca49391-0.eypSaE.cli-parent")
+
+        for movie in movies:
+
+            title = movie.css(".ipc-title__text::text").get()
+            rating = movie.css(".ipc-rating-star.ipc-rating-star--base.ipc-rating-star--imdb.ratingGroup--imdb-rating::text").get()
+            img = movie.css(".ipc-image::attr(src)").get()
+            url = movie.css(".ipc-lockup-overlay.ipc-focusable::attr(href)").get()
+            data = movie.css(".sc-14dd939d-5.cPiUKY.cli-title-metadata > span::text").getall()
+
+
+            yield {
+                "title": title,
+                "rating": rating,
+                "data": data,
+                "url": url,
+                "img": img
             }
