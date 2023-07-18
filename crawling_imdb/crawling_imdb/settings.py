@@ -1,3 +1,5 @@
+from fake_useragent import UserAgent
+
 # Scrapy settings for crawling_imdb project
 #
 # For simplicity, this file contains only settings considered important or
@@ -14,7 +16,9 @@ NEWSPIDER_MODULE = "crawling_imdb.spiders"
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = "crawling_imdb (+http://www.yourdomain.com)"
+fake_user_agent = UserAgent()
+headers = {'User-Agent': fake_user_agent.random}
+USER_AGENT = headers
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
