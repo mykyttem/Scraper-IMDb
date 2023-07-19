@@ -40,7 +40,6 @@ class Crawling_ReleaseCalendar(CrawlSpider):
             actors = movies.css(".ipc-inline-list.ipc-inline-list--show-dividers.ipc-inline-list--no-wrap.ipc-inline-list--inline.ipc-metadata-list-summary-item__stl.base > li > span::text").getall()
             img = movies.css(".ipc-media.ipc-media--poster-27x40.ipc-image-media-ratio--poster-27x40.ipc-media--base.ipc-media--custom.ipc-poster__poster-image.ipc-media__img > img::attr(src)").get()
             url = movies.css(".ipc-metadata-list-summary-item__t::attr(href)").get()
-            
 
             yield {
                 "region": region,    
@@ -62,7 +61,6 @@ class BaseCrawler(CrawlSpider):
         img = movie.css(".ipc-image::attr(src)").get()
         url = movie.css(".ipc-lockup-overlay.ipc-focusable::attr(href)").get()
         data = movie.css(".sc-14dd939d-5.cPiUKY.cli-title-metadata > span::text").getall()
-
 
         return {
             "title": title,
@@ -94,3 +92,28 @@ class Crawling_MostPopularMovies(BaseCrawler):
 
         for block in block_movies:
             yield self.parse_movie(block)
+
+
+#TODO scroll more 
+class Crawling_MovieNews(BaseCrawler):
+    name = "Crawler_MovieNews"
+    start_urls = ["https://www.imdb.com/news/movie/?ref_=nv_nw_mv"]
+
+
+    def parse_start_url(self, response):
+        news = response.css(".ipc-list-card--border-line.ipc-list-card.sc-bec740f7-0.QvRgg.ipc-list-card--base")
+
+        for new in news:
+            title = new.css(".ipc-link.ipc-link--base.sc-bec740f7-3.dKUtuz::text").get()
+            url = new.css(".ipc-link.ipc-link--base.sc-bec740f7-3.dKUtuz::attr(href)").get()
+            description = new.css(".ipc-html-content-inner-div::text").getall()
+            data = new.css(".ipc-inline-list.ipc-inline-list--show-dividers.ipc-inline-list--inline.sc-bec740f7-14.hptXtT.base > li::text").getall()
+            img = new.css(".ipc-image::attr(src)").get()
+
+            yield {
+                "title": title,
+                "url": url,
+                "description": description,
+                "data": data,
+                "img": img
+            }
