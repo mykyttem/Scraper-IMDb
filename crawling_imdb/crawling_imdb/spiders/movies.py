@@ -51,6 +51,8 @@ class Crawling_ReleaseCalendar(CrawlSpider):
             }
 
 
+""" Creating a basic crawler and using its tags for other urls """
+
 class BaseCrawler(CrawlSpider):
     allowed_domains = ["imdb.com"]
 
@@ -72,7 +74,6 @@ class BaseCrawler(CrawlSpider):
 
 
 class Crawling_Top250Movies(BaseCrawler):
-
     name = "Crawler_Top250Movies"
     start_urls = ["https://www.imdb.com/chart/top/?ref_=nv_mv_250"]
 
@@ -92,6 +93,22 @@ class Crawling_MostPopularMovies(BaseCrawler):
 
         for block in block_movies:
             yield self.parse_movie(block)
+
+
+class Crawling_TopBoxOfficeUS(BaseCrawler):
+    name = "Crawler_TopBoxOfficeUS"
+    start_urls = ["https://www.imdb.com/chart/boxoffice/?ref_=nv_ch_cht"]
+
+    def parse_start_url(self, response):
+        block_movies = response.css(".ipc-metadata-list-summary-item.sc-bca49391-0.eypSaE.cli-parent")
+
+        for block in block_movies:
+            movie_data = self.parse_movie(block)
+
+            data = block.css(".sc-ee64acb1-0.kCMURQ.sc-14dd939d-8.ipueKh > li > span::text").getall()
+            movie_data["data"] = data
+            
+            yield movie_data
 
 
 #TODO scroll more 
@@ -116,4 +133,29 @@ class Crawling_MovieNews(BaseCrawler):
                 "description": description,
                 "data": data,
                 "img": img
+            }
+
+
+class Crawling_IndiaMovieSpotlight(CrawlSpider):
+    name = "Crawler_IndiaMovieSpotlight"
+    allowed_domains = ["imdb.com"]
+    start_urls = ["https://www.imdb.com/india/toprated/?ref_=nv_mv_in"]
+
+    def parse_start_url(self, response):
+    
+        blocks_top = response.css(".ipc-page-section.ipc-page-section--base.sc-48edd91f-0.dOPmaK")
+
+        for block in blocks_top:
+            title_top = block.css(".ipc-title__text::text").get()
+            title_movie = block.css('span[data-testid="title"]::text').getall()
+            rating = block.css(".ipc-rating-star.ipc-rating-star--base.ipc-rating-star--imdb.ipc-rating-star-group--imdb::text").getall()
+            img = block.css(".ipc-image::attr(src)").getall()
+            url = block.css(".ipc-lockup-overlay.ipc-focusable::attr(href)").getall()
+
+            yield {
+                "title_top": title_top,
+                "title_movie": title_movie,
+                "rating": rating,
+                "img": img,
+                "url": url
             }
