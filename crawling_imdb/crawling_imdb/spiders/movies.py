@@ -1,5 +1,6 @@
 from scrapy.spiders import CrawlSpider
 
+
 codes_regions = []
 
 class Crawling_ReleaseCalendar(CrawlSpider):
@@ -18,7 +19,7 @@ class Crawling_ReleaseCalendar(CrawlSpider):
         # parse code region
         regions = response.css("#country-selector option::attr(value)").getall()
         codes_regions.extend(regions)         
-
+     
         # parse all url release calendar regions 
         for code in codes_regions:  
             url = r"https://www.imdb.com/calendar/\?ref_=rlm&region=" + code + "&type=MOVIE"
@@ -147,15 +148,75 @@ class Crawling_IndiaMovieSpotlight(CrawlSpider):
 
         for block in blocks_top:
             title_top = block.css(".ipc-title__text::text").get()
-            title_movie = block.css('span[data-testid="title"]::text').getall()
-            rating = block.css(".ipc-rating-star.ipc-rating-star--base.ipc-rating-star--imdb.ipc-rating-star-group--imdb::text").getall()
-            img = block.css(".ipc-image::attr(src)").getall()
-            url = block.css(".ipc-lockup-overlay.ipc-focusable::attr(href)").getall()
+            title_movies = block.css('span[data-testid="title"]::text').getall()
+            ratings = block.css(".ipc-rating-star.ipc-rating-star--base.ipc-rating-star--imdb.ipc-rating-star-group--imdb::text").getall()
+            imgs = block.css(".ipc-image::attr(src)").getall()
+            urls = block.css(".ipc-lockup-overlay.ipc-focusable::attr(href)").getall()
+
+
+            for title_movie, rating, img, url in zip(title_movies, ratings, imgs, urls):
+
+                yield {
+                    "title_top": title_top,
+                    "title_movie": title_movie,
+                    "rating": rating,
+                    "img": img,
+                    "url": url
+                }
+
+
+class Crawling_BrowseByGenre(CrawlSpider):
+    name = "Crawler_BrowseByGenre"
+    allowed_domains = ["imdb.com"]
+    start_urls = ["https://www.imdb.com/feature/genre/?ref_=nv_ch_gr"]
+
+
+    """ 
+    Parse the source url, get the genre urls
+    Pass the url to the following function "parse_genre"
+    Sort movies by page genre
+    """
+
+    def parse_start_url(self, response):
+        
+        # get all types blocks
+        blocks = response.css(".ipc-page-section.ipc-page-section--base")
+
+        # search block movie and get genre
+        for block in blocks:
+            movie_block = block.css('.ipc-title__text > span[id="movie"]')
+
+            if movie_block.get():
+                
+                urls = block.css(".ipc-chip.ipc-chip--on-base-accent2::attr(href)").getall()
+
+                for url in urls:
+
+                    # pass next func, parse urls genre
+                    yield response.follow(url, callback=self.parse_genre)
+
+    
+    def parse_genre(self, response):
+        
+        genre = response.css(".header::text").get()
+        blocks = response.css(".lister-item.mode-advanced")
+
+        for movie in blocks:
+            
+            title = movie.css(".lister-item-header > a::text").get()
+            data = movie.css(".text-muted > span::text").getall()
+            rating = movie.css(".inline-block.ratings-imdb-rating > strong::text").get()
+            description = movie.css(".text-muted::text").getall()
 
             yield {
-                "title_top": title_top,
-                "title_movie": title_movie,
+                "genre": genre,
+                "title": title,
+                "data": data,
                 "rating": rating,
-                "img": img,
-                "url": url
+                "description": description
             }
+
+
+        # parse next page
+        next_page = response.css(".lister-page-next.next-page::attr(href)").get()
+        yield response.follow(next_page, callback=self.parse_genre)
