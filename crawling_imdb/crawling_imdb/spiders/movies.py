@@ -52,29 +52,45 @@ class Crawling_ReleaseCalendar(CrawlSpider):
             }
 
 
-class Crawling_Top250Movies(CrawlSpider):
-    name = "Crawler_Top250Movies"
+class BaseCrawler(CrawlSpider):
     allowed_domains = ["imdb.com"]
+
+    def parse_movie(self, movie):
+
+        title = movie.css(".ipc-title__text::text").get()
+        rating = movie.css(".ipc-rating-star.ipc-rating-star--base.ipc-rating-star--imdb.ratingGroup--imdb-rating::text").get()
+        img = movie.css(".ipc-image::attr(src)").get()
+        url = movie.css(".ipc-lockup-overlay.ipc-focusable::attr(href)").get()
+        data = movie.css(".sc-14dd939d-5.cPiUKY.cli-title-metadata > span::text").getall()
+
+
+        return {
+            "title": title,
+            "rating": rating,
+            "data": data,
+            "url": url,
+            "img": img
+        }
+
+
+class Crawling_Top250Movies(BaseCrawler):
+
+    name = "Crawler_Top250Movies"
     start_urls = ["https://www.imdb.com/chart/top/?ref_=nv_mv_250"]
 
-
     def parse_start_url(self, response):
-    
         movies = response.css(".ipc-metadata-list-summary-item.sc-bca49391-0.eypSaE.cli-parent")
 
         for movie in movies:
-
-            title = movie.css(".ipc-title__text::text").get()
-            rating = movie.css(".ipc-rating-star.ipc-rating-star--base.ipc-rating-star--imdb.ratingGroup--imdb-rating::text").get()
-            img = movie.css(".ipc-image::attr(src)").get()
-            url = movie.css(".ipc-lockup-overlay.ipc-focusable::attr(href)").get()
-            data = movie.css(".sc-14dd939d-5.cPiUKY.cli-title-metadata > span::text").getall()
+            yield self.parse_movie(movie)
 
 
-            yield {
-                "title": title,
-                "rating": rating,
-                "data": data,
-                "url": url,
-                "img": img
-            }
+class Crawling_MostPopularMovies(BaseCrawler):
+    name = "Crawler_MostPopularMovies"
+    start_urls = ["https://www.imdb.com/chart/moviemeter/?ref_=nv_mv_mpm"]
+
+    def parse_start_url(self, response):
+        block_movies = response.css(".ipc-metadata-list-summary-item.sc-bca49391-0.eypSaE.cli-parent")
+
+        for block in block_movies:
+            yield self.parse_movie(block)
