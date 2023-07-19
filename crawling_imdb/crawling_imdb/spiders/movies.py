@@ -3,7 +3,7 @@ from scrapy.spiders import CrawlSpider
 
 codes_regions = []
 
-class Crawling_ReleaseCalendar(CrawlSpider):
+class ReleaseCalendar(CrawlSpider):
     name = "Crawler_ReleaseCalendar"
     allowed_domains = ["imdb.com"]
     start_urls = ["https://www.imdb.com/calendar/"]
@@ -74,7 +74,7 @@ class BaseCrawler(CrawlSpider):
         }
 
 
-class Crawling_Top250Movies(BaseCrawler):
+class Top250Movies(BaseCrawler):
     name = "Crawler_Top250Movies"
     start_urls = ["https://www.imdb.com/chart/top/?ref_=nv_mv_250"]
 
@@ -85,7 +85,7 @@ class Crawling_Top250Movies(BaseCrawler):
             yield self.parse_movie(movie)
 
 
-class Crawling_MostPopularMovies(BaseCrawler):
+class MostPopularMovies(BaseCrawler):
     name = "Crawler_MostPopularMovies"
     start_urls = ["https://www.imdb.com/chart/moviemeter/?ref_=nv_mv_mpm"]
 
@@ -96,7 +96,7 @@ class Crawling_MostPopularMovies(BaseCrawler):
             yield self.parse_movie(block)
 
 
-class Crawling_TopBoxOfficeUS(BaseCrawler):
+class TopBoxOfficeUS(BaseCrawler):
     name = "Crawler_TopBoxOfficeUS"
     start_urls = ["https://www.imdb.com/chart/boxoffice/?ref_=nv_ch_cht"]
 
@@ -113,7 +113,7 @@ class Crawling_TopBoxOfficeUS(BaseCrawler):
 
 
 #TODO scroll more 
-class Crawling_MovieNews(BaseCrawler):
+class MovieNews(BaseCrawler):
     name = "Crawler_MovieNews"
     start_urls = ["https://www.imdb.com/news/movie/?ref_=nv_nw_mv"]
 
@@ -137,7 +137,7 @@ class Crawling_MovieNews(BaseCrawler):
             }
 
 
-class Crawling_IndiaMovieSpotlight(CrawlSpider):
+class IndiaMovieSpotlight(CrawlSpider):
     name = "Crawler_IndiaMovieSpotlight"
     allowed_domains = ["imdb.com"]
     start_urls = ["https://www.imdb.com/india/toprated/?ref_=nv_mv_in"]
@@ -165,7 +165,7 @@ class Crawling_IndiaMovieSpotlight(CrawlSpider):
                 }
 
 
-class Crawling_BrowseByGenre(CrawlSpider):
+class BrowseByGenre(CrawlSpider):
     name = "Crawler_BrowseByGenre"
     allowed_domains = ["imdb.com"]
     start_urls = ["https://www.imdb.com/feature/genre/?ref_=nv_ch_gr"]
